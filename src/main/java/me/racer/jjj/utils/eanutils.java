@@ -6,6 +6,7 @@ import pl.coderion.service.OpenFoodFactsWrapper;
 import pl.coderion.service.impl.OpenFoodFactsWrapperImpl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class eanutils {
     public static ArrayList<String> getEANdata(String EAN) {
@@ -13,7 +14,10 @@ public class eanutils {
         OpenFoodFactsWrapper wrapper = new OpenFoodFactsWrapperImpl();
         ProductResponse productResponse = wrapper.fetchProductByCode(EAN);
 
+
         Product product = productResponse.getProduct();
+
+
         EANdata.add(product.getProductName());
         EANdata.add(product.getGenericName());
         EANdata.add(product.getImageUrl());
