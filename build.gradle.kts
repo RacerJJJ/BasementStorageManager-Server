@@ -10,8 +10,13 @@ repositories {
 }
 
 dependencies {
+
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("pl.coderion:openfoodfacts-java-wrapper:0.9.3")
+    implementation("org.jsoup:jsoup:1.18.1")
+    implementation("com.codeborne:phantomjsdriver:1.5.0")
+
 }
 
 tasks.test {
