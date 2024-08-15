@@ -7,11 +7,9 @@ import pl.coderion.model.ProductResponse;
 import pl.coderion.service.OpenFoodFactsWrapper;
 import pl.coderion.service.impl.OpenFoodFactsWrapperImpl;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class sql {
     private static final Logger log = LoggerFactory.getLogger(sql.class);
@@ -34,8 +32,15 @@ public class sql {
         }
     }
 
+    public static Map<String,ArrayList<String>> getstock(String orderby) throws SQLException {
+        Statement stockstat = mainsqlcon.createStatement();
+        String orderbysql = ""; //placeholder
+        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, productcache.name, stock.amount, stock.expirydate, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN ORDER BY '"+ orderbysql +"'");
+    }
+
+
+
     public static String loadtocache(String EAN) {
-        ArrayList<String> EANdata = new ArrayList<>();
         OpenFoodFactsWrapper wrapper = new OpenFoodFactsWrapperImpl();
         ProductResponse productResponse = wrapper.fetchProductByCode(EAN);
 
