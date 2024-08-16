@@ -1,7 +1,11 @@
 package me.racer.jjj.socket;
 
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.lang3.SerializationUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.net.ServerSocketFactory;
 import java.io.*;
@@ -10,11 +14,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
-import static me.racer.jjj.utils.sql.getstock;
+import static me.racer.jjj.utils.sql.*;
 
 public class httpserver {
     public static void initializeHTTPServer(int port) {
@@ -25,13 +30,70 @@ public class httpserver {
                 // add ean to db
                 // send
 
-                String response = "successfully added!";
-                exchange.sendResponseHeaders(200, response.getBytes().length);
+                //JSON DATA FROM CLIENT
+
+
+
+                InputStream requstream = exchange.getRequestBody();
+                Scanner scanner = new Scanner(requstream);
+                String requdata = scanner.nextLine();
+                JSONObject requjson;
+                try {
+                    requjson = (JSONObject) new JSONParser().parse(requdata);
+                } catch (ParseException e) {
+                    String resp = "Invalid data received.";
+                    exchange.sendResponseHeaders(200, resp.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(resp.getBytes());
+                    output.flush();
+                    exchange.close();
+                    return;
+                }
+
+                String resp = loadtocache((String) requjson.get("EAN"));
+
+                try {
+                    addStock((String) requjson.get("EAN"), Integer.valueOf((String) requjson.get("EAN")), (String) requjson.get("expirydate"));
+                } catch (Exception e) {
+                    String respo = "Failed to update stock.";
+                    exchange.sendResponseHeaders(200, respo.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(respo.getBytes());
+                    output.flush();
+                    exchange.close();
+                    return;
+                }
+
+                exchange.sendResponseHeaders(200, resp.getBytes().length);
                 OutputStream output = exchange.getResponseBody();
-                output.write(response.getBytes());
+                output.write(resp.getBytes());
                 output.flush();
                 exchange.close();
             }));
+
+            server.createContext("/api/removeean", (exchange -> {
+                InputStream requstream = exchange.getRequestBody();
+                Scanner scanner = new Scanner(requstream);
+                String requdata = scanner.nextLine();
+                try {
+                    removeStock(Integer.valueOf(requdata));
+                    String respo = "Successfully removed from stock.";
+                    exchange.sendResponseHeaders(200, respo.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(respo.getBytes());
+                    output.flush();
+                    exchange.close();
+                } catch (SQLException e) {
+                    String respo = "Failed to update stock.";
+                    exchange.sendResponseHeaders(200, respo.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(respo.getBytes());
+                    output.flush();
+                    exchange.close();
+                    return;
+                }
+            }));
+
             server.createContext("/api/currentstock", (exchange -> {
                 // get current stock from db
                 // send to client

@@ -18,6 +18,7 @@ dependencies {
     implementation("com.codeborne:phantomjsdriver:1.5.0")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1")
     implementation("org.apache.commons:commons-lang3:3.16.0")
+    implementation("org.apache.clerezza.ext:org.json.simple:0.4")
 
 }
 

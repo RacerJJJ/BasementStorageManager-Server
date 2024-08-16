@@ -8,6 +8,8 @@ import pl.coderion.service.OpenFoodFactsWrapper;
 import pl.coderion.service.impl.OpenFoodFactsWrapperImpl;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,10 +35,32 @@ public class sql {
         }
     }
 
+    public static void addStock(String ean, int amount, String expirydate) throws SQLException {
+        Statement stockstat = mainsqlcon.createStatement();
+        ResultSet indexnumber =  stockstat.executeQuery("SELECT * FROM stock");
+        indexnumber.absolute(-1);
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        stockstat.executeUpdate("INSERT INTO stock (itemid, EAN, amount, expirydate, adddate) VALUES (" + indexnumber.getInt("itemid")+1 + ", '" + ean + "', '" + amount + "', '" + expirydate + "', '" + dtf.format(now) + "')");
+        stockstat.close();
+    }
+
+    public static void removeStock(int itemid) throws SQLException {
+        Statement stockstat = mainsqlcon.createStatement();
+
+        stockstat.executeUpdate("DELETE FROM stock WHERE itemid = " + itemid);
+        stockstat.close();
+    }
+
+
     public static Map<String,ArrayList<String>> getstock(String orderby) throws SQLException {
         Map<String,ArrayList<String>> stock = new HashMap<>();
         Statement stockstat = mainsqlcon.createStatement();
-        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, productcache.name, stock.amount, stock.expirydate, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN ORDER BY "+ orderby +"");
+        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, stock.amount, stock.expirydate, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN ORDER BY "+ orderby +"");
+
+        //Group by EAN
 
         userresult.absolute(0);
         while (userresult.next()) {
@@ -61,16 +85,27 @@ public class sql {
 
 
     public static String loadtocache(String EAN) {
-        OpenFoodFactsWrapper wrapper = new OpenFoodFactsWrapperImpl();
-        ProductResponse productResponse = wrapper.fetchProductByCode(EAN);
 
 
-        Product product = productResponse.getProduct();
-        if (product == null) {
-            return "Product could not be found.";
-        }
+
         try {
             Statement cachestat = mainsqlcon.createStatement();
+
+            ResultSet checkifexists = cachestat.executeQuery("SELECT EAN FROM productcache WHERE EAN ='" + EAN +  "'");
+            if (checkifexists.getString("EAN").equals(EAN)) {
+                return "Success - Product is already cached.";
+            }
+
+            OpenFoodFactsWrapper wrapper = new OpenFoodFactsWrapperImpl();
+            ProductResponse productResponse = wrapper.fetchProductByCode(EAN);
+
+
+            Product product = productResponse.getProduct();
+            if (product == null) {
+                return "Product could not be found.";
+            }
+
+
             System.out.println(product.getCategories().split(",")[0]);
             cachestat.executeUpdate("INSERT INTO productcache (EAN, name, quantity, imageurl, type, location) VALUES ('" + EAN + "', '" + product.getProductName() + "', '" + product.getQuantity() + "', '" + product.getImageUrl() + "', '" + product.getCategories().split(",")[0] + "', '" + "basement" +  "')");
             cachestat.close();
@@ -78,7 +113,7 @@ public class sql {
             return "There was a problem adding it to the cache-database.";
         }
 
-        return "success";
+        return "Success - Product is now cached.";
     }
 }
 //insert into stock(itemid, EAN, amount, expirydate, adddate) values (1, "5449000000439",2,"2024-09-13","2024-08-16 12:13:14");
