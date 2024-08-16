@@ -59,7 +59,7 @@ public class sql {
     public static String getstock(String orderby) throws SQLException {
         JSONObject stockjson = new JSONObject();
         Statement stockstat = mainsqlcon.createStatement();
-        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, sum(stock.amount), min(stock.expirydate), productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN GROUP BY stock.EAN ORDER BY "+ orderby +"");
+        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, sum(stock.amount), min(stock.expirydate), productcache.quantity, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN GROUP BY stock.EAN ORDER BY "+ orderby +"");
 
         //Group by EAN
 
@@ -70,6 +70,7 @@ public class sql {
             productjson.put("name", userresult.getString("productcache.name"));
             productjson.put("amount", userresult.getString("sum(stock.amount)"));
             productjson.put("expirydate", userresult.getString("min(stock.expirydate)"));
+            productjson.put("quantity", userresult.getString("productcache.quantity"));
             productjson.put("imageurl", userresult.getString("productcache.imageurl"));
             stockjson.put(userresult.getString("EAN"), productjson);
         }
@@ -79,6 +80,33 @@ public class sql {
         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
         userresult.next();
         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
+         **/
+
+        return stockjson.toJSONString();
+    }
+
+    public static String getproductstock(String EAN) throws SQLException {
+        JSONObject stockjson = new JSONObject();
+        Statement stockstat = mainsqlcon.createStatement();
+        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, stock.amount, stock.expirydate, stock.adddate, productcache.quantity, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN WHERE stock.EAN = '" + EAN + "'ORDER BY stock.expirydate ASC");
+
+        stockjson.put("EAN", userresult.getString("stock.EAN"));
+        stockjson.put("name", userresult.getString("productcache.name"));
+        stockjson.put("quantity", userresult.getString("productcache.quantity"));
+        stockjson.put("imageurl", userresult.getString("productcache.imageurl"));
+
+        userresult.absolute(0);
+        JSONObject productjson = new JSONObject();
+        while (userresult.next()) {
+            productjson.put(userresult.getString("stock.itemid"), "[" + userresult.getString("stock.amount") + "," + userresult.getString("stock.expirydate") + "," + userresult.getString("stock.adddate") + "]");
+        }
+        stockjson.put("stock", productjson);
+        //System.out.println(stock);
+        /**
+         userresult.first();
+         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
+         userresult.next();
+         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
          **/
 
         return stockjson.toJSONString();

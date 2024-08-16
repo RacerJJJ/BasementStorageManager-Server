@@ -124,6 +124,37 @@ public class httpserver {
 
 
             }));
+
+            server.createContext("/api/productstock", (exchange -> {
+                // get current stock from db
+                // send to client
+                InputStream requstream = exchange.getRequestBody();
+                Scanner scanner = new Scanner(requstream);
+                String requdata = scanner.nextLine();
+                System.out.println(requdata);
+
+                String stock;
+                try {
+                    stock = getproductstock(requdata);
+                    //byte[] serializedmap = SerializationUtils.serialize((Serializable) stock);
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(200, stock.length());
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(stock.getBytes());
+                    output.flush();
+                    exchange.close(); //maybe I should send it as json data instead
+
+                } catch (SQLException e) {
+                    String error = "There was an error processing the request.\nError: " + e.getMessage();
+                    exchange.sendResponseHeaders(200, error.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(error.getBytes());
+                    output.flush();
+                    exchange.close();
+                }
+
+
+            }));
             server.setExecutor(null); // maybe offload to different thread?
             server.start();
 
