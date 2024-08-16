@@ -17,6 +17,8 @@ dependencies {
     implementation("org.jsoup:jsoup:1.18.1")
     implementation("com.codeborne:phantomjsdriver:1.5.0")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1")
+    implementation("org.apache.commons:commons-lang3:3.16.0")
+
 }
 
 tasks.test {

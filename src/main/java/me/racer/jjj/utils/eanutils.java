@@ -12,6 +12,6 @@ public class eanutils {
     public static ArrayList<String> getEANdata(String EAN) {
 
 
-        return EANdata;
+        return null;
     }
 }
