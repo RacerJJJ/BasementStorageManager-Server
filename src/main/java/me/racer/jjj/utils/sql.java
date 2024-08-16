@@ -1,5 +1,6 @@
 package me.racer.jjj.utils;
 
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.coderion.model.Product;
@@ -55,21 +56,22 @@ public class sql {
     }
 
 
-    public static Map<String,ArrayList<String>> getstock(String orderby) throws SQLException {
-        Map<String,ArrayList<String>> stock = new HashMap<>();
+    public static String getstock(String orderby) throws SQLException {
+        JSONObject stockjson = new JSONObject();
         Statement stockstat = mainsqlcon.createStatement();
-        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, stock.amount, stock.expirydate, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN ORDER BY "+ orderby +"");
+        ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, sum(stock.amount), min(stock.expirydate), productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN GROUP BY stock.EAN ORDER BY "+ orderby +"");
 
         //Group by EAN
 
         userresult.absolute(0);
         while (userresult.next()) {
-            ArrayList<String> stockarray = new ArrayList();
-            for (int i = 2; i <= userresult.getMetaData().getColumnCount(); i++) {
-                stockarray.add(userresult.getString(i));
-            }
-            stock.put(userresult.getString(1),stockarray);
-
+            JSONObject productjson = new JSONObject();
+            productjson.put("itemid", userresult.getString("stock.itemid"));
+            productjson.put("name", userresult.getString("productcache.name"));
+            productjson.put("amount", userresult.getString("sum(stock.amount)"));
+            productjson.put("expirydate", userresult.getString("min(stock.expirydate)"));
+            productjson.put("imageurl", userresult.getString("productcache.imageurl"));
+            stockjson.put(userresult.getString("EAN"), productjson);
         }
         //System.out.println(stock);
         /**
@@ -79,7 +81,7 @@ public class sql {
         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
          **/
 
-        return stock;
+        return stockjson.toJSONString();
     }
 
 

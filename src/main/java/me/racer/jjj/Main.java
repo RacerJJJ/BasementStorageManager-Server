@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static me.racer.jjj.socket.httpserver.initializeHTTPServer;
 import static me.racer.jjj.utils.eanutils.getEANdata;
 import static me.racer.jjj.utils.sql.*;
 
@@ -22,12 +23,13 @@ public class Main {
 
 
         initsql("127.0.0.1","3306", "basementstoragemanager","mysql","root","root" );
+
+        initializeHTTPServer(8080);
         //loadtocache("5449000000439");
         //loadtocache("5449000214911");
         try {
-            Map<String, ArrayList<String>> stock = getstock("stock.expirydate ASC");
-            byte[] serializedmap = SerializationUtils.serialize((Serializable) stock);
-            System.out.println((Map<String, ArrayList<String>>) SerializationUtils.deserialize(serializedmap));
+            String stock = getstock("stock.expirydate ASC");
+            System.out.println(stock);
         } catch (Exception e) {
             e.printStackTrace();
         }

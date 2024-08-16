@@ -13,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.net.spi.InetAddressResolver;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -24,14 +25,13 @@ import static me.racer.jjj.utils.sql.*;
 public class httpserver {
     public static void initializeHTTPServer(int port) {
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+            HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 10);
             server.createContext("/api/sendean", (exchange -> {
                 // get info of ean
                 // add ean to db
                 // send
 
                 //JSON DATA FROM CLIENT
-
 
 
                 InputStream requstream = exchange.getRequestBody();
@@ -100,14 +100,16 @@ public class httpserver {
                 InputStream requstream = exchange.getRequestBody();
                 Scanner scanner = new Scanner(requstream);
                 String requdata = scanner.nextLine();
+                System.out.println(requdata);
 
-                Map<String, ArrayList<String>> stock;
+                String stock;
                 try {
                     stock = getstock(requdata);
-                    byte[] serializedmap = SerializationUtils.serialize((Serializable) stock);
-                    exchange.sendResponseHeaders(200, serializedmap.length);
+                    //byte[] serializedmap = SerializationUtils.serialize((Serializable) stock);
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(200, stock.length());
                     OutputStream output = exchange.getResponseBody();
-                    output.write(serializedmap);
+                    output.write(stock.getBytes());
                     output.flush();
                     exchange.close(); //maybe I should send it as json data instead
 
