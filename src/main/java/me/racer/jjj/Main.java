@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static me.racer.jjj.socket.httpserver.initializeHTTPServer;
-import static me.racer.jjj.utils.eanutils.getEANdata;
 import static me.racer.jjj.utils.sql.*;
 
 public class Main {
+
+    public static final String IMG_FILE_PATH = "/cache/images/";
+
     public static void main(String[] args) {
         System.out.println("Hello world!");
         /**
@@ -24,7 +26,7 @@ public class Main {
 
         initsql("127.0.0.1","3306", "basementstoragemanager","mysql","root","root" );
 
-        initializeHTTPServer(8080);
+        initializeHTTPServer("127.0.0.1", 8080);
         //loadtocache("5449000000439");
         //loadtocache("5449000214911");
         try {

@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class migros {
+
+    // Currently not working, postponed to fix later
+
     public static void microsEAN(Map<String,Float> purchases) {
         for (Map.Entry<String,Float> entry : purchases.entrySet()) {
             Document searchdoc = null;

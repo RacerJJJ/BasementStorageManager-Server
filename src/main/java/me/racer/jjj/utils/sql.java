@@ -8,12 +8,15 @@ import pl.coderion.model.ProductResponse;
 import pl.coderion.service.OpenFoodFactsWrapper;
 import pl.coderion.service.impl.OpenFoodFactsWrapperImpl;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static me.racer.jjj.utils.imageutils.saveImage;
 
 public class sql {
     private static final Logger log = LoggerFactory.getLogger(sql.class);
@@ -76,24 +79,26 @@ public class sql {
         }
         //System.out.println(stock);
         /**
-        userresult.first();
-        System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
-        userresult.next();
-        System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
+         userresult.first();
+         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
+         userresult.next();
+         System.out.println(userresult.getString(1) + " | " +userresult.getString(2)+ " | " +userresult.getString(3)+ " | " +userresult.getString(4)+ " | " + userresult.getString(5));
          **/
 
         return stockjson.toJSONString();
     }
 
-    public static String getproductstock(String EAN) throws SQLException {
+    public static String getproductstock(String EAN) throws SQLException, IOException {
         JSONObject stockjson = new JSONObject();
         Statement stockstat = mainsqlcon.createStatement();
         ResultSet userresult =  stockstat.executeQuery("SELECT stock.EAN, stock.itemid, productcache.name, stock.amount, stock.expirydate, stock.adddate, productcache.quantity, productcache.imageurl FROM stock JOIN productcache ON stock.EAN=productcache.EAN WHERE stock.EAN = '" + EAN + "'ORDER BY stock.expirydate ASC");
 
+
+        String imgpath = saveImage(userresult.getString("productcache.imageurl"));
         stockjson.put("EAN", userresult.getString("stock.EAN"));
         stockjson.put("name", userresult.getString("productcache.name"));
         stockjson.put("quantity", userresult.getString("productcache.quantity"));
-        stockjson.put("imageurl", userresult.getString("productcache.imageurl"));
+        stockjson.put("imageurl", imgpath);
 
         userresult.absolute(0);
         JSONObject productjson = new JSONObject();

@@ -18,14 +18,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import static me.racer.jjj.utils.sql.*;
 
 public class httpserver {
-    public static void initializeHTTPServer(int port) {
+    public static void initializeHTTPServer(String host, int port) {
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 10);
+            HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 10);
             server.createContext("/api/sendean", (exchange -> {
                 // get info of ean
                 // add ean to db
@@ -97,10 +98,16 @@ public class httpserver {
             server.createContext("/api/currentstock", (exchange -> {
                 // get current stock from db
                 // send to client
+
                 InputStream requstream = exchange.getRequestBody();
                 Scanner scanner = new Scanner(requstream);
-                String requdata = scanner.nextLine();
-                System.out.println(requdata);
+                String requdata;
+                try {
+                    requdata = scanner.nextLine();
+                } catch (NoSuchElementException e) {
+                    requdata = "stock.expirydate ASC";
+                }
+
 
                 String stock;
                 try {
