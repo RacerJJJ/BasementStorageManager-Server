@@ -10,4 +10,6 @@ The system works with the EAN number of the product. Users will be able to scan 
 - **/api/productstock** - This endpoint returns all entries of a specified product (identified by their EAN) that are currently in stock.
 
 
-### This software is not finished yet and can't be used yet. 
+## Usage
+**This is still in development and not production ready yet.**  
+To use it you should have a current Java Runtime Environment (JRE) installed. Download the jar from the release tab or build it yourself with the source code. To start it run it in the terminal with ```java -jar BasementStorageManager-0.1.0-alpha.jar``` and than it runs on 127.0.0.1 on port 8080 (this will be in a config in the future, currently it's hard coded in the main class). To get an overview of the endpoints take a look at the previous paragraph.
